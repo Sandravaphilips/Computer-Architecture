@@ -31,6 +31,7 @@ class CPU:
         self.branch_table[self.opcodes['LDI']] = self.ldi
         self.branch_table[self.opcodes['PRN']] = self.prn
         self.branch_table[self.opcodes['HLT']] = self.hlt
+        self.branch_table[self.opcodes['MUL']] = self.mul
 
     def ram_read(self, address):
         return self.ram[address]
@@ -79,23 +80,24 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        elif op == "DEC":
-            self.reg[reg_a] -= 1
-        elif op == "INC":
-            self.reg[reg_a] += 1
-        elif op == "ADDI":
-            self.reg[reg_a] += reg_b
-        elif op == "SUB":
-            self.reg[reg_a] -= self.reg[reg_b]
-        elif op == "MUL":
-            self.reg[reg_a] *= self.reg[reg_b]
-        elif op == "DIV":
-            self.reg[reg_a] //= self.reg[reg_b]
-        elif op == "MOD":
-            self.reg[reg_a] %= self.reg[reg_b]
-        
+        # if op == "ADD":
+        #     self.reg[reg_a] += self.reg[reg_b]
+        # elif op == "DEC":
+        #     self.reg[reg_a] -= 1
+        # elif op == "INC":
+        #     self.reg[reg_a] += 1
+        # elif op == "ADDI":
+        #     self.reg[reg_a] += reg_b
+        # elif op == "SUB":
+        #     self.reg[reg_a] -= self.reg[reg_b]
+        # elif op == "MUL":
+        #     self.reg[reg_a] *= self.reg[reg_b]
+        # elif op == "DIV":
+        #     self.reg[reg_a] //= self.reg[reg_b]
+        # elif op == "MOD":
+        #     self.reg[reg_a] %= self.reg[reg_b]
+        if op in self.opcodes:
+            self.branch_table[self.opcodes[op]]()
         else:
             raise Exception("Unsupported ALU operation")
     
@@ -111,6 +113,9 @@ class CPU:
     def prn(self):
         reg_idx = self.ram[self.pc+1]
         print(self.reg[reg_idx])
+
+    def mul(self):
+        self.reg[self.ram[self.pc+1]] *= self.reg[self.ram[self.pc+2]]
 
     def trace(self):
         """
