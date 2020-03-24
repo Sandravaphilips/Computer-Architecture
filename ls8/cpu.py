@@ -7,7 +7,36 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.reg = 8 * [0]
+        self.ram = 256 * [0]
+        self.pc = 0 
+        self.running = True 
+        self.opcodes = {
+            "NOP":  0b00000000,
+            "LDI":  0b10000010,
+            "PRN":  0b01000111,
+            "ADD":  0b10100000,
+            "MUL":  0b10100010,
+            "HLT":  0b00000001,
+            "PUSH": 0b01000101,
+            "POP":  0b01000110,
+            "CALL": 0b01010000,
+            "RET":  0b00010001,
+            "CMP":  0b10100111,
+            "JMP":  0b01010100,
+            "JEQ":  0b01010101,
+            "JNE":  0b01010110,
+        }
+        self.branch_table = {}
+        self.branch_table[self.opcodes['LDI']] = self.ldi
+        self.branch_table[self.opcodes['PRN']] = self.prn
+        self.branch_table[self.opcodes['HLT']] = self.hlt
+
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, value, address):
+        self.ram[address] = value
 
     def load(self):
         """Load a program into memory."""
@@ -36,9 +65,36 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "DEC":
+            self.reg[reg_a] -= 1
+        elif op == "INC":
+            self.reg[reg_a] += 1
+        elif op == "ADDI":
+            self.reg[reg_a] += reg_b
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "DIV":
+            self.reg[reg_a] //= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
+        
         else:
             raise Exception("Unsupported ALU operation")
+    
+    def hlt(self):
+        self.running = False
+        sys.exit(0)
+
+    def ldi(self):
+        reg_idx = self.ram[self.pc+1]
+        reg_val = self.ram[self.pc+2]
+        self.reg[reg_idx] = reg_val
+
+    def prn(self):
+        reg_idx = self.ram[self.pc+1]
+        print(self.reg[reg_idx])
 
     def trace(self):
         """
@@ -62,4 +118,11 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        while self.running:
+            instruction = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc+1)
+            operand_b = self.ram_read(self.pc+2)
+            
+            self.branch_table[instruction]()
+            
+            self.pc += (instruction >> 6) + 1
