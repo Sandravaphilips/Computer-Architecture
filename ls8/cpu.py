@@ -9,6 +9,7 @@ class CPU:
         """Construct a new CPU."""
         self.reg = 8 * [0]
         self.ram = 256 * [0]
+        self.reg[7] = 0xF4
         self.pc = 0 
         self.running = True 
         self.opcodes = {
@@ -32,6 +33,8 @@ class CPU:
         self.branch_table[self.opcodes['PRN']] = self.prn
         self.branch_table[self.opcodes['HLT']] = self.hlt
         self.branch_table[self.opcodes['MUL']] = self.mul
+        self.branch_table[self.opcodes['PUSH']] = self.push
+        self.branch_table[self.opcodes['POP']] = self.pop
 
     def ram_read(self, address):
         return self.ram[address]
@@ -116,6 +119,21 @@ class CPU:
 
     def mul(self):
         self.reg[self.ram[self.pc+1]] *= self.reg[self.ram[self.pc+2]]
+
+    def push(self):
+        self.reg[7] -= 1
+        reg_idx = self.ram[self.pc+1]
+        push_val = self.reg[reg_idx]        
+        sp = self.reg[7]
+        self.ram[sp] = push_val
+        
+    
+    def pop(self):
+        reg_idx = self.ram[self.pc+1]        
+        sp = self.reg[7]
+        pop_val = self.ram[sp]
+        self.reg[reg_idx] = pop_val
+        self.reg[7] += 1
 
     def trace(self):
         """
