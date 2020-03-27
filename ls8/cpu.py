@@ -35,6 +35,10 @@ class CPU:
         self.branch_table[self.opcodes['MUL']] = self.mul
         self.branch_table[self.opcodes['PUSH']] = self.push
         self.branch_table[self.opcodes['POP']] = self.pop
+        self.branch_table[self.opcodes['CALL']] = self.call
+        self.branch_table[self.opcodes['RET']] = self.ret
+        self.branch_table[self.opcodes['ADD']] = self.add
+
 
     def ram_read(self, address):
         return self.ram[address]
@@ -103,6 +107,9 @@ class CPU:
             self.branch_table[self.opcodes[op]]()
         else:
             raise Exception("Unsupported ALU operation")
+
+    def add(self):
+        self.reg[self.ram[self.pc+1]] += self.reg[self.ram[self.pc+2]]
     
     def hlt(self):
         self.running = False
@@ -125,15 +132,31 @@ class CPU:
         reg_idx = self.ram[self.pc+1]
         push_val = self.reg[reg_idx]        
         sp = self.reg[7]
-        self.ram[sp] = push_val
+        self.ram[sp] = push_val        
         
     
     def pop(self):
-        reg_idx = self.ram[self.pc+1]        
+        reg_idx = self.ram[self.pc+1]       
         sp = self.reg[7]
         pop_val = self.ram[sp]
         self.reg[reg_idx] = pop_val
+        self.reg[7] += 1 
+        
+
+    def call(self):
+        push_val = (self.pc + 2)
+        sp = self.reg[7]
+        self.ram[sp] = push_val
+        self.reg[7] -= 1
+        reg_idx = self.ram[self.pc+1]
+        call_address = self.reg[reg_idx]
+        self.pc = call_address
+
+    def ret(self):
         self.reg[7] += 1
+        sp = self.reg[7]
+        ret_address = self.ram[sp]
+        self.pc = ret_address
 
     def trace(self):
         """
@@ -161,5 +184,6 @@ class CPU:
             instruction = self.ram_read(self.pc)
             
             self.branch_table[instruction]()
-            
+            if instruction in {self.opcodes['CALL'], self.opcodes['RET']}:
+                continue
             self.pc += (instruction >> 6) + 1
