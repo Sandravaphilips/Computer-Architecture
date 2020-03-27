@@ -168,6 +168,12 @@ class CPU:
         elif self.reg[self.ram[self.pc+1]] == self.reg[self.ram[self.pc+2]]:
             self.fl = 0b00000001
 
+    def jmp(self):
+        reg_idx = self.ram[self.pc+1]
+        address = self.reg[reg_idx]
+        
+        self.pc = address
+
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
