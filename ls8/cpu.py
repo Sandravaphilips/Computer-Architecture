@@ -11,6 +11,7 @@ class CPU:
         self.ram = 256 * [0]
         self.reg[7] = 0xF4
         self.pc = 0 
+        self.fl = 0b00000000
         self.running = True 
         self.opcodes = {
             "NOP":  0b00000000,
@@ -38,6 +39,7 @@ class CPU:
         self.branch_table[self.opcodes['CALL']] = self.call
         self.branch_table[self.opcodes['RET']] = self.ret
         self.branch_table[self.opcodes['ADD']] = self.add
+        self.branch_table[self.opcodes['CMP']] = self.cmp
 
 
     def ram_read(self, address):
@@ -157,6 +159,14 @@ class CPU:
         sp = self.reg[7]
         ret_address = self.ram[sp]
         self.pc = ret_address
+
+    def cmp(self):
+        if self.reg[self.ram[self.pc+1]] > self.reg[self.ram[self.pc+2]]:
+            self.fl = 0b00000100
+        elif self.reg[self.ram[self.pc+1]] > self.reg[self.ram[self.pc+2]]:
+            self.fl = 0b00000010
+        elif self.reg[self.ram[self.pc+1]] == self.reg[self.ram[self.pc+2]]:
+            self.fl = 0b00000001
 
     def trace(self):
         """
