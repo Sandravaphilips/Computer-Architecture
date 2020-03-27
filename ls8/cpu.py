@@ -12,6 +12,11 @@ class CPU:
         self.reg[7] = 0xF4
         self.pc = 0 
         self.fl = 0b00000000
+        self.fl_status = {
+            "L":  0b00000100,
+            "G":  0b00000010,
+            "E":  0b00000001,
+        }  
         self.running = True 
         self.opcodes = {
             "NOP":  0b00000000,
@@ -162,17 +167,22 @@ class CPU:
 
     def cmp(self):
         if self.reg[self.ram[self.pc+1]] > self.reg[self.ram[self.pc+2]]:
-            self.fl = 0b00000100
+            self.fl = self.fl_status['L']
         elif self.reg[self.ram[self.pc+1]] > self.reg[self.ram[self.pc+2]]:
-            self.fl = 0b00000010
+            self.fl = self.fl_status['G']
         elif self.reg[self.ram[self.pc+1]] == self.reg[self.ram[self.pc+2]]:
-            self.fl = 0b00000001
+            self.fl = self.fl_status['E']
 
     def jmp(self):
         reg_idx = self.ram[self.pc+1]
         address = self.reg[reg_idx]
-        
         self.pc = address
+
+    def jeq(self):
+        if self.fl == self.fl_status['E']:
+            reg_idx = self.ram[self.pc+1]
+            address = self.reg[reg_idx]
+            self.pc = address
 
     def trace(self):
         """
