@@ -97,23 +97,22 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        # if op == "ADD":
-        #     self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "DEC":
-        #     self.reg[reg_a] -= 1
-        # elif op == "INC":
-        #     self.reg[reg_a] += 1
-        # elif op == "ADDI":
-        #     self.reg[reg_a] += reg_b
-        # elif op == "SUB":
-        #     self.reg[reg_a] -= self.reg[reg_b]
-        # elif op == "MUL":
-        #     self.reg[reg_a] *= self.reg[reg_b]
-        # elif op == "DIV":
-        #     self.reg[reg_a] //= self.reg[reg_b]
-        # elif op == "MOD":
-        #     self.reg[reg_a] %= self.reg[reg_b]
-        if op in self.opcodes:
+        if op == "AND":
+            self.reg[reg_a] &= self.reg[reg_b]
+        elif op == "OR":
+            self.reg[reg_a] |= self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] ^= self.reg[reg_b]
+        elif op == "NOT":
+            mask = 0b11111111
+            self.reg[reg_a] ^= mask 
+        elif op == "SHL":
+            self.reg[reg_a] <<= self.reg[reg_b]
+        elif op == "SHR":
+            self.reg[reg_a] >>= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
+        elif op in self.opcodes:
             self.branch_table[self.opcodes[op]]()
         else:
             raise Exception("Unsupported ALU operation")
