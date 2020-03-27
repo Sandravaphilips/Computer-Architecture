@@ -45,6 +45,9 @@ class CPU:
         self.branch_table[self.opcodes['RET']] = self.ret
         self.branch_table[self.opcodes['ADD']] = self.add
         self.branch_table[self.opcodes['CMP']] = self.cmp
+        self.branch_table[self.opcodes['JMP']] = self.jmp
+        self.branch_table[self.opcodes['JEQ']] = self.jeq
+        self.branch_table[self.opcodes['JNE']] = self.jne
 
 
     def ram_read(self, address):
@@ -183,6 +186,18 @@ class CPU:
             reg_idx = self.ram[self.pc+1]
             address = self.reg[reg_idx]
             self.pc = address
+        else:
+            instruction = self.ram[self.pc]
+            self.pc += (instruction >> 6) + 1
+
+    def jne(self):
+        if self.fl != self.fl_status['E']:
+            reg_idx = self.ram[self.pc+1]
+            address = self.reg[reg_idx]
+            self.pc = address
+        else:
+            instruction = self.ram[self.pc]
+            self.pc += (instruction >> 6) + 1
 
     def trace(self):
         """
@@ -210,6 +225,6 @@ class CPU:
             instruction = self.ram_read(self.pc)
             
             self.branch_table[instruction]()
-            if instruction in {self.opcodes['CALL'], self.opcodes['RET']}:
+            if instruction in {self.opcodes['CALL'], self.opcodes['RET'], self.opcodes['JMP'], self.opcodes['JEQ'], self.opcodes['JNE']}:
                 continue
             self.pc += (instruction >> 6) + 1
